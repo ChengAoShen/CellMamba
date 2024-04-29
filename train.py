@@ -20,6 +20,8 @@ train_transform = transforms.Compose(
         transforms.RandomVerticalFlip(),
         transforms.RandomHorizontalFlip(),
         transforms.Resize((1024, 1024)),
+        transforms.RandomRotation(90),
+        # transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
     ]
 )
 
@@ -30,14 +32,15 @@ train_dataset = CellFlowDataset(
 )
 
 
-train_dataloader = DataLoader(train_dataset, batch_size=2, shuffle=True, num_workers=4)
+train_dataloader = DataLoader(train_dataset, batch_size=2,
+                              shuffle=True, num_workers=4)
 length_train_dataset = len(train_dataset)
 
 
 # model = UNet().to(device)
 model = torch.load("./checkpoint/best.pth").to(device)
 optimizer = torch.optim.SGD(
-    model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001
+    model.parameters(), lr=0.05, momentum=0.9, weight_decay=0.0001
 )
 scheduler = CosineAnnealingLR(optimizer, T_max=100, eta_min=0.01)
 
@@ -111,7 +114,8 @@ for epoch in range(epochs):
         writer.add_images("gt_image/y_flow", (flow[:4, 1:2, :, :] + 1) / 2, epoch)
         writer.add_images("gt_image/x_flow", (flow[:4, 2:3, :, :] + 1) / 2, epoch)
 
+
+    if (epoch + 1) % 50 == 0:
         torch.save(model, f"./checkpoint/model_{epoch+1}.pth")
 
-# 关闭 TensorBoard 写入器
 writer.close()
