@@ -2,12 +2,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
+from cellpose import dynamics
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
-from cellpose import dynamics
+from torch.utils.tensorboard.writer import SummaryWriter
 
-from model import UNet
 from data import CellFlowDataset
 
 writer = SummaryWriter()
@@ -32,8 +31,7 @@ train_dataset = CellFlowDataset(
 )
 
 
-train_dataloader = DataLoader(train_dataset, batch_size=2,
-                              shuffle=True, num_workers=4)
+train_dataloader = DataLoader(train_dataset, batch_size=2, shuffle=True, num_workers=4)
 length_train_dataset = len(train_dataset)
 
 
@@ -96,7 +94,7 @@ for epoch in range(epochs):
         mask_list = np.array(mask_list, dtype=np.float32)
         mask = torch.tensor(mask_list, dtype=torch.float32).unsqueeze(1)
 
-        writer.add_images(f"predict_image/mask", mask, epoch)
+        writer.add_images("predict_image/mask", mask, epoch)
         writer.add_images("image/input", image[:4, :, :, :], epoch)
         writer.add_images(
             "predict_image/probability",
@@ -113,7 +111,6 @@ for epoch in range(epochs):
         )
         writer.add_images("gt_image/y_flow", (flow[:4, 1:2, :, :] + 1) / 2, epoch)
         writer.add_images("gt_image/x_flow", (flow[:4, 2:3, :, :] + 1) / 2, epoch)
-
 
     if (epoch + 1) % 50 == 0:
         torch.save(model, f"./checkpoint/model_{epoch+1}.pth")
