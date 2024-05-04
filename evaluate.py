@@ -12,6 +12,7 @@ from PIL import Image
 from pycocotools import mask as maskUtils
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
+
 def visualize_and_save(image, masks, image_path):
     """
     可视化并保存图像和其对应的分割掩模。
@@ -35,8 +36,8 @@ def visualize_and_save(image, masks, image_path):
 
 
 model_path = "./checkpoint/best.pth"
-coco_gt = COCO("/data/disk01/cell/cell_1360x1024/annotation/val_without_TBM1.json")
-# coco_gt = COCO("/data/disk01/cell/cell_1360x1024/annotation/val.json")
+# coco_gt = COCO("/data/disk01/cell/cell_1360x1024/annotation/val_without_TBM1.json")
+coco_gt = COCO("/data/disk01/cell/cell_1360x1024/annotation/val.json")
 image_dir = "/data/disk01/cell/cell_1360x1024/val"
 
 
