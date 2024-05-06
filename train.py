@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard.writer import SummaryWriter
 
 from data import CellFlowDataset
+from model import UNet
 
 writer = SummaryWriter()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -19,8 +20,6 @@ train_transform = transforms.Compose(
         transforms.RandomVerticalFlip(),
         transforms.RandomHorizontalFlip(),
         transforms.Resize((1024, 1024)),
-        transforms.RandomRotation(90),
-        # transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
     ]
 )
 
@@ -31,16 +30,19 @@ train_dataset = CellFlowDataset(
 )
 
 
-train_dataloader = DataLoader(train_dataset, batch_size=2, shuffle=True, num_workers=4)
+train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=4)
 length_train_dataset = len(train_dataset)
 
 
-# model = UNet().to(device)
-model = torch.load("./checkpoint/best.pth").to(device)
+model = UNet(use_Mamba=True).to(device)
+model.load_state_dict(torch.load("./checkpoint/U_Mamba/best_85.pth"))
+
+# model = torch.load("./checkpoint/best.pth").to(device)
+
 optimizer = torch.optim.SGD(
-    model.parameters(), lr=0.05, momentum=0.9, weight_decay=0.0001
+    model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001
 )
-scheduler = CosineAnnealingLR(optimizer, T_max=100, eta_min=0.01)
+scheduler = CosineAnnealingLR(optimizer, T_max=100, eta_min=0.05)
 
 
 # Training
@@ -83,7 +85,7 @@ for epoch in range(epochs):
 
     if (epoch + 1) % 10 == 0:
         mask_list = []
-        for index in range(2):
+        for index in range(1):
             mask, p = dynamics.compute_masks(
                 torch.tanh(output[index, 1:3, :, :]).detach().cpu().numpy(),
                 torch.sigmoid(output[index, 0, :, :]).detach().cpu().numpy(),
@@ -113,6 +115,6 @@ for epoch in range(epochs):
         writer.add_images("gt_image/x_flow", (flow[:4, 2:3, :, :] + 1) / 2, epoch)
 
     if (epoch + 1) % 50 == 0:
-        torch.save(model, f"./checkpoint/model_{epoch+1}.pth")
+        torch.save(model.state_dict(), f"./checkpoint/U_Mamba/model_{epoch+1}.pth")
 
 writer.close()

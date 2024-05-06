@@ -3,6 +3,9 @@ import pycocotools.mask as mask_utils
 from pycocotools.coco import COCO
 from tqdm import tqdm
 from cellpose import dynamics
+import os
+import cv2
+import matplotlib.pyplot as plt
 
 
 def create_mask_layer(coco: COCO, image_id: int) -> np.ndarray:
@@ -45,6 +48,29 @@ def coco_to_masklist(coco: COCO) -> list:
     for image_id in tqdm(coco.getImgIds()):
         mask_list.append(create_mask_layer(coco, image_id))
     return mask_list
+
+
+def show_mask(annotation_file: str, image_dir: str, img_id: int) -> None:
+    coco = COCO(annotation_file)
+
+    # 获取指定 ID 的图像信息
+    img_info = coco.loadImgs([img_id])[0]
+    img_filename = img_info["file_name"]
+    image_path = os.path.join(image_dir, img_filename)
+
+    # 加载图像
+    img = cv2.imread(image_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    # 获取标注信息
+    ann_ids = coco.getAnnIds(imgIds=[img_id])
+    anns = coco.loadAnns(ann_ids)
+
+    # 将标注画在图像上
+    plt.imshow(img)
+    coco.showAnns(anns)
+    plt.axis("off")  # 不显示坐标轴
+    plt.show()
 
 
 if __name__ == "__main__":
