@@ -1,13 +1,15 @@
-import os
-import torch
-import numpy as np
-from PIL import Image
-import torchvision.transforms as transforms
-from model import UNet  # 确保这个模型已经正确定义
-from cellpose import dynamics
-import cv2
 import json
+import os
+
+import cv2
+import numpy as np
+import torch
+import torchvision.transforms as transforms
+from cellpose import dynamics
+from PIL import Image
 from pycocotools import mask as maskUtils
+
+from model import UNet  # 确保这个模型已经正确定义
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

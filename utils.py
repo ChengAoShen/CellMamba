@@ -1,11 +1,12 @@
-import numpy as np
-import pycocotools.mask as mask_utils
-from pycocotools.coco import COCO
-from tqdm import tqdm
-from cellpose import dynamics
 import os
+
 import cv2
 import matplotlib.pyplot as plt
+import numpy as np
+import pycocotools.mask as mask_utils
+from cellpose import dynamics
+from pycocotools.coco import COCO
+from tqdm import tqdm
 
 
 def create_mask_layer(coco: COCO, image_id: int) -> np.ndarray:
