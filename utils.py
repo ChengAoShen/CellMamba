@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pycocotools.mask as mask_utils
 from cellpose import dynamics
+from PIL import Image
 from pycocotools.coco import COCO
 from tqdm import tqdm
 
@@ -74,10 +75,22 @@ def show_mask(annotation_file: str, image_dir: str, img_id: int) -> None:
     plt.show()
 
 
+def visualize_and_save(image, masks, image_path):
+    image = np.array(image.convert("RGB"))
+    overlay = image.copy()
+    for index in np.unique(masks):
+        if index == 0:
+            continue
+        mask = masks == index
+        colored_mask = np.random.randint(0, 255, (1, 3), dtype=np.uint8)
+        overlay[mask] = overlay[mask] * 0.5 + colored_mask * 0.5
+
+    combined = Image.fromarray(overlay.astype(np.uint8))
+    combined.save(image_path)
+
+
 if __name__ == "__main__":
     coco_annotation_file = "/data/disk01/cell/cell_1360x1024/annotation/train.json"
     coco = COCO(coco_annotation_file)
     mask_list = coco_to_masklist(coco)
     flow = dynamics.labels_to_flows(mask_list)
-
-    # mask, p = dynamics.compute_masks(flow[0][2:], flow[0][1], flow_threshold=0.0, min_size=1, interp=False)
